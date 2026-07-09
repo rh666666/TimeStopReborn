@@ -1,5 +1,6 @@
 package com.adoleiiiiii.timestop.mixin;
 
+import com.adoleiiiiii.timestop.api.TimeStopFeatureGate;
 import com.adoleiiiiii.timestop.common.NetherStarVoidCraftHandler;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
@@ -17,6 +18,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class EntityVoidCraftMixin {
     @Inject(method = "onBelowWorld", at = @At("HEAD"), cancellable = true)
     private void timestopreborn$netherStarVoidCraft(CallbackInfo ci) {
+        if (!TimeStopFeatureGate.registerDefaultContent()) {
+            return;
+        }
         Entity self = (Entity) (Object) this;
         if (self.level().isClientSide() || !(self instanceof ItemEntity itemEntity)) {
             return;

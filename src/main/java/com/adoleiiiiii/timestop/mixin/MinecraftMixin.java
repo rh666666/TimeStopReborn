@@ -1,27 +1,18 @@
 package com.adoleiiiiii.timestop.mixin;
 
-import com.adoleiiiiii.timestop.ClockItem;
 import com.adoleiiiiii.timestop.Time;
-import com.mojang.blaze3d.platform.Window;
-import com.mojang.blaze3d.systems.TimerQuery;
-import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
-import net.minecraft.client.CloudStatus;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.Options;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.screens.DeathScreen;
 import net.minecraft.client.gui.screens.InBedChatScreen;
 import net.minecraft.client.gui.screens.Overlay;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraft.util.profiling.metrics.profiling.MetricsRecorder;
 import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
@@ -29,17 +20,14 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import java.util.Locale;
 
 /**
  * 时停期间替换客户端 tick 与 runTick 后半段逻辑。
  */
 @Mixin(Minecraft.class)
 public abstract class MinecraftMixin {
-    @Shadow
-    public static int fps;
     @Shadow
     public int rightClickDelay;
     @Shadow
@@ -67,32 +55,6 @@ public abstract class MinecraftMixin {
     @Shadow
     @Final
     private DeltaTracker.Timer timer;
-    @Shadow
-    @Nullable
-    public IntegratedServer singleplayerServer;
-    @Shadow
-    public ParticleEngine particleEngine;
-    @Shadow
-    public Window window;
-    @Shadow
-    public int frames;
-    @Shadow
-    public long lastNanoTime;
-    @Shadow
-    public Options options;
-    @Shadow
-    public MetricsRecorder metricsRecorder;
-    @Shadow
-    public double gpuUtilization;
-    @Shadow
-    @Nullable
-    public TimerQuery.FrameProfile currentFrameProfile;
-    @Shadow
-    public long savedCpuDuration;
-    @Shadow
-    public long lastTime;
-    @Shadow
-    public String fpsString;
 
     @Shadow
     public abstract void setScreen(@Nullable Screen screen);
@@ -100,17 +62,10 @@ public abstract class MinecraftMixin {
     @Shadow
     protected abstract void handleKeybinds();
 
-    @Shadow
-    public abstract boolean hasSingleplayerServer();
-
-    @Shadow
-    protected abstract int getFramerateLimit();
-
     @Inject(method = "tick", at = @At("HEAD"), cancellable = true)
     private void onTick(CallbackInfo ci) {
         if (Time.isClientActive()) {
             pause = true;
-            ClockItem.stoppingTime++;
             if (this.rightClickDelay > 0) {
                 --this.rightClickDelay;
             }
@@ -133,43 +88,35 @@ public abstract class MinecraftMixin {
             if (this.screen != null) {
                 Screen.wrapScreenError(() -> this.screen.tick(), "Ticking screen", this.screen.getClass().getCanonicalName());
             }
-            if (this.overlay == null && this.screen == null) {
+            if (this.overlay == null && this.screen == null && Time.canLocalPlayerAct()) {
                 this.handleKeybinds();
                 if (this.missTime > 0) {
                     --this.missTime;
                 }
             }
             if (level != null) {
-                level.tickingEntities.forEach(entity -> {
-                    if (!entity.isRemoved() && !entity.isPassenger()) {
-                        if (entity instanceof Player && entity != player) {
-                            level.guardEntityTick(level::tickNonPassenger, entity);
-                        }
-                        if (entity.tickCount < 1) {
-                            level.guardEntityTick(level::tickNonPassenger, entity);
-                        }
+                for (Player other : level.players()) {
+                    if (other != player && !other.isRemoved() && !other.isPassenger()) {
+                        level.guardEntityTick(level::tickNonPassenger, other);
                     }
-                });
+                }
             }
             ci.cancel();
-        } else {
-            ClockItem.stoppingTime = 0;
         }
     }
 
-    /**
-     * 渲染前同步原版计时器冻结态，并推进玩家独立 tick。
-     */
+    /** 渲染前同步原版计时器冻结态，并推进玩家独立 tick。 */
     @Inject(method = "runTick", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/renderer/GameRenderer;render(Lnet/minecraft/client/DeltaTracker;Z)V"))
     private void prepareTimeStopRender(boolean renderLevel, CallbackInfo ci) {
-        if (Time.isClientActive()) {
-            this.timer.updateFrozenState(true);
+        if (!Time.isClientActive() || !Time.canLocalPlayerAct()) {
+            return;
         }
+        this.timer.updateFrozenState(true);
         for (int i = 0; i < Time.timer.advanceTime(Util.getMillis(), true); i++) {
-            if (level != null && player != null && Time.isClientActive()) {
+            if (level != null && player != null) {
                 level.guardEntityTick(level::tickNonPassenger, player);
-                this.gui.tick(this.pause);
+                this.gui.tick(Time.isClientActive() && Time.canLocalPlayerAct() ? false : this.pause);
                 gameRenderer.itemInHandRenderer.tick();
                 this.gameRenderer.tick();
             }
@@ -177,59 +124,19 @@ public abstract class MinecraftMixin {
     }
 
     @Inject(method = "runTick", at = @At(value = "INVOKE",
-            target = "Lcom/mojang/blaze3d/platform/Window;setErrorSection(Ljava/lang/String;)V", ordinal = 2),
-            cancellable = true)
-    private void onPostRender(boolean renderLevel, CallbackInfo ci) {
+            target = "Lnet/minecraft/client/DeltaTracker$Timer;updatePauseState(Z)V"))
+    private void timestopreborn$forcePauseFlag(CallbackInfo ci) {
         if (Time.isClientActive()) {
             this.pause = true;
-            this.timer.updatePauseState(true);
-            this.timer.updateFrozenState(true);
-            this.window.setErrorSection("Post render");
-            ++frames;
-            boolean profileGpu;
-            if (!((Minecraft) (Object) this).getDebugOverlay().showDebugScreen() && !this.metricsRecorder.isRecording()) {
-                profileGpu = false;
-                this.gpuUtilization = 0.0D;
-            } else {
-                profileGpu = this.currentFrameProfile == null || this.currentFrameProfile.isDone();
-                if (profileGpu) {
-                    TimerQuery.getInstance().ifPresent(TimerQuery::beginProfile);
-                }
-            }
-            long now = Util.getNanos();
-            long frameDuration = now - lastNanoTime;
-            if (profileGpu) {
-                this.savedCpuDuration = frameDuration;
-            }
-            ((Minecraft) (Object) this).getDebugOverlay().logFrameDuration(frameDuration);
-            this.lastNanoTime = now;
-            this.profiler.push("fpsUpdate");
-            if (this.currentFrameProfile != null && this.currentFrameProfile.isDone()) {
-                this.gpuUtilization = (double) this.currentFrameProfile.get() * 100.0D / (double) this.savedCpuDuration;
-            }
-            while (Util.getMillis() >= this.lastTime + 1000L) {
-                String gpuText;
-                if (this.gpuUtilization > 0.0D) {
-                    gpuText = " GPU: " + (this.gpuUtilization > 100.0D
-                            ? ChatFormatting.RED + "100%"
-                            : Math.round(this.gpuUtilization) + "%");
-                } else {
-                    gpuText = "";
-                }
-                int limit = this.getFramerateLimit();
-                fps = this.frames;
-                this.fpsString = String.format(Locale.ROOT, "%d fps T: %s%s%s%s B: %d%s", fps,
-                        limit == 260 ? "inf" : limit,
-                        this.options.enableVsync().get() ? " vsync" : "",
-                        this.options.graphicsMode().get(),
-                        this.options.cloudStatus().get() == CloudStatus.OFF ? ""
-                                : (this.options.cloudStatus().get() == CloudStatus.FAST ? " fast-clouds" : " fancy-clouds"),
-                        this.options.biomeBlendRadius().get(), gpuText);
-                this.lastTime += 1000L;
-                this.frames = 0;
-            }
-            this.profiler.pop();
-            ci.cancel();
         }
+    }
+
+    @ModifyVariable(method = "runTick", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/client/DeltaTracker$Timer;updateFrozenState(Z)V"), ordinal = 0)
+    private boolean timestopreborn$forceFrozenState(boolean frozen) {
+        if (Time.isClientActive() && Time.getActivePostEffect() != null) {
+            return true;
+        }
+        return frozen;
     }
 }

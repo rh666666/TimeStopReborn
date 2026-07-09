@@ -4,6 +4,7 @@ import com.adoleiiiiii.timestop.Time;
 import com.adoleiiiiii.timestop.TimeStopReborn;
 import com.adoleiiiiii.timestop.config.TimeStopClientConfig;
 import com.adoleiiiiii.timestop.render.ShaderGetter;
+import net.minecraft.client.Minecraft;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -28,19 +29,24 @@ public final class ModifyShader {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onRenderFrame(RenderFrameEvent.Pre event) {
+        if (!Time.isClientActive()) {
+            return;
+        }
         Time.millis++;
         if (shouldDriveStartupAnimation()) {
             timeTheWorld += TimeStopClientConfig.getStartupAnimationSpeed();
             ShaderGetter.updateUniformPost("time", timeTheWorld);
+            if (Time.isAnimationOnlyPostEffect()
+                    && timeTheWorld >= TimeStopClientConfig.STARTUP_ANIMATION_END_TIME) {
+                Time.finishAnimationOnlyPostEffect(Minecraft.getInstance());
+            }
         } else {
             timeTheWorld = 0F;
-            ShaderGetter.invalidateTimeUniformCache();
         }
     }
 
     private static boolean shouldDriveStartupAnimation() {
-        return Time.isClientActive()
-                && TimeStopClientConfig.isStartupAnimationEnabled()
+        return TimeStopClientConfig.isStartupAnimationEnabled()
                 && ShaderGetter.hasTimeUniform();
     }
 }

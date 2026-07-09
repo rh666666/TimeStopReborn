@@ -1,8 +1,10 @@
 package com.adoleiiiiii.timestop;
 
+import com.adoleiiiiii.timestop.api.TimeStopFeatureGate;
 import com.adoleiiiiii.timestop.common.EntityRegister;
 import com.adoleiiiiii.timestop.common.SoundsRegister;
 import com.adoleiiiiii.timestop.config.TimeStopClientConfig;
+import com.adoleiiiiii.timestop.config.TimeStopCommonConfig;
 import com.adoleiiiiii.timestop.network.TimeStopPackets;
 import com.mojang.logging.LogUtils;
 import net.minecraft.ChatFormatting;
@@ -16,6 +18,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
+import net.neoforged.fml.event.config.ModConfigEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -52,11 +55,34 @@ public class TimeStopReborn {
 
     public TimeStopReborn(IEventBus modEventBus, ModContainer modContainer) {
         modContainer.registerConfig(ModConfig.Type.CLIENT, TimeStopClientConfig.SPEC);
+        modContainer.registerConfig(ModConfig.Type.COMMON, TimeStopCommonConfig.SPEC);
+        modEventBus.addListener(TimeStopReborn::onConfigLoad);
+        modEventBus.addListener(TimeStopReborn::onConfigReload);
+        modEventBus.addListener(TimeStopPackets::register);
+        modEventBus.addListener(TimeStopRebornClient::onConfigReload);
+        registerContent(modEventBus);
+    }
+
+    private static void onConfigLoad(ModConfigEvent.Loading event) {
+        if (event.getConfig().getSpec() != TimeStopCommonConfig.SPEC) {
+            return;
+        }
+        TimeStopFeatureGate.INSTANCE.applyConfig(TimeStopCommonConfig.isRegisterDefaultContent());
+    }
+
+    private static void registerContent(IEventBus modEventBus) {
+        if (!TimeStopFeatureGate.registerDefaultContent()) {
+            return;
+        }
         ITEMS.register(modEventBus);
         CREATIVE_MODE_TABS.register(modEventBus);
         SoundsRegister.SOUNDS.register(modEventBus);
         EntityRegister.ENTITIES.register(modEventBus);
-        modEventBus.addListener(TimeStopPackets::register);
-        modEventBus.addListener(TimeStopRebornClient::onConfigReload);
+    }
+
+    private static void onConfigReload(ModConfigEvent.Reloading event) {
+        if (event.getConfig().getSpec() == TimeStopCommonConfig.SPEC) {
+            TimeStopFeatureGate.INSTANCE.applyConfig(TimeStopCommonConfig.isRegisterDefaultContent());
+        }
     }
 }

@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 public class CameraMixin {
     @ModifyVariable(method = "setup", at = @At("HEAD"), ordinal = 0, argsOnly = true)
     private float useTimeStopPartialTick(float partialTick) {
-        return Time.isClientActive()
+        return Time.isClientActive() && Time.canLocalPlayerAct()
                 ? Time.timer.getGameTimeDeltaPartialTick(true)
                 : partialTick;
     }

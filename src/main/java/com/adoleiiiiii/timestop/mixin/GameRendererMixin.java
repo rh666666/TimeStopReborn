@@ -30,8 +30,11 @@ public abstract class GameRendererMixin {
 
     @ModifyVariable(method = "loadEffect", at = @At("HEAD"), argsOnly = true)
     private ResourceLocation forceConfiguredShader(ResourceLocation location) {
-        if (Time.isClientActive() && TimeStopClientConfig.isPostEffectEnabled()) {
-            return TimeStopClientConfig.resolvePostEffect();
+        if (Time.isClientActive() && TimeStopClientConfig.isSustainedPostEffect()) {
+            ResourceLocation configured = TimeStopClientConfig.resolveActivePostEffect();
+            if (configured != null) {
+                return configured;
+            }
         }
         return location;
     }
@@ -45,24 +48,29 @@ public abstract class GameRendererMixin {
 
     @Inject(method = "shutdownEffect", at = @At("HEAD"), cancellable = true)
     private void onShutdownEffect(CallbackInfo ci) {
-        if (Time.isClientActive() && Time.getActivePostEffect() != null && postEffect != null
-                && Time.isActivePostEffectName(postEffect.getName())) {
+        if (isLockingActiveEffect(postEffect)) {
             ci.cancel();
         }
     }
 
     @Inject(method = "checkEntityPostEffect", at = @At("HEAD"), cancellable = true)
     private void onCheckEntityPostEffect(Entity entity, CallbackInfo ci) {
-        if (Time.isClientActive() && Time.getActivePostEffect() != null && postEffect != null
-                && Time.isActivePostEffectName(postEffect.getName())) {
+        if (isLockingActiveEffect(postEffect)) {
             ci.cancel();
         }
     }
 
     @ModifyVariable(method = "renderItemInHand", at = @At("HEAD"), ordinal = 0, argsOnly = true)
     private float useTimeStopHandPartialTick(float partialTick) {
-        return Time.isClientActive()
+        return Time.isClientActive() && Time.canLocalPlayerAct()
                 ? Time.timer.getGameTimeDeltaPartialTick(true)
                 : partialTick;
+    }
+
+    private static boolean isLockingActiveEffect(@Nullable PostChain effect) {
+        return Time.isClientActive()
+                && Time.getActivePostEffect() != null
+                && effect != null
+                && Time.isActivePostEffectName(effect.getName());
     }
 }
