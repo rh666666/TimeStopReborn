@@ -1,0 +1,12 @@
+{
+  "itemGroup.timestopreborn": "时停重生",
+  "item.timestopreborn.time_clock": "时间怀表",
+  "item.timestopreborn.knife": "飞刀",
+  "message.timestopreborn.void_craft.time_clock": "你向虚空献出了世界的战利品，也因此理解了时间的真谛",
+  "timestopreborn.configuration.title": "时停重生客户端设置",
+  "timestopreborn.configuration.visual": "视觉",
+  "timestopreborn.configuration.visual.enablePostEffect": "启用时停滤镜",
+  "timestopreborn.configuration.visual.enableStartupAnimation": "启用启动动画",
+  "timestopreborn.configuration.visual.startupAnimationSpeed": "启动动画速度",
+  "timestopreborn.configuration.visual.postEffect": "滤镜资源路径"
+}

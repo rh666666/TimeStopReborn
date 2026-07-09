@@ -1,0 +1,12 @@
+{
+  "itemGroup.timestopreborn": "Time Stop: Reborn",
+  "item.timestopreborn.time_clock": "Time Clock",
+  "item.timestopreborn.knife": "Knife",
+  "message.timestopreborn.void_craft.time_clock": "You offered the spoils of the world to the void, and thus grasped the truth of time",
+  "timestopreborn.configuration.title": "Time Stop: Reborn Client Settings",
+  "timestopreborn.configuration.visual": "Visual",
+  "timestopreborn.configuration.visual.enablePostEffect": "Enable Time Stop Post Effect",
+  "timestopreborn.configuration.visual.enableStartupAnimation": "Enable Startup Animation",
+  "timestopreborn.configuration.visual.startupAnimationSpeed": "Startup Animation Speed",
+  "timestopreborn.configuration.visual.postEffect": "Post Effect Resource Location"
+}

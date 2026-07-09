@@ -1,0 +1,17 @@
+{
+  "stop": {
+    "sounds": [
+      "timestopreborn:stop"
+    ]
+  },
+  "knife_throw": {
+    "sounds": [
+      "timestopreborn:knife_throw"
+    ]
+  },
+  "knife_hit": {
+    "sounds": [
+      "timestopreborn:knife_hit"
+    ]
+  }
+}
