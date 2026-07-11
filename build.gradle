@@ -1,6 +1,3 @@
-import groovy.json.JsonOutput
-import groovy.json.JsonSlurper
-
 plugins {
     id 'net.neoforged.moddev' version '2.0.141'
     id 'idea'
@@ -102,52 +99,17 @@ neoForge {
     }
 }
 
-/**
- * 合并 core 与 mod 的 lang JSON，避免平铺打包时同路径文件互相覆盖。
- */
-tasks.register('mergeLangResources') {
-    def coreLangDir = coreProject.file('src/main/resources/assets/timestopreborn/lang')
-    def modLangDir = modProject.file('src/main/resources/assets/timestopreborn/lang')
-    def outputDir = layout.buildDirectory.dir('generated/mergedResources/assets/timestopreborn/lang')
-
-    inputs.dir(coreLangDir)
-    inputs.dir(modLangDir)
-    outputs.dir(outputDir)
-
-    doLast {
-        def outDir = outputDir.get().asFile
-        outDir.mkdirs()
-        ['en_us.json', 'zh_cn.json'].each { fileName ->
-            def coreFile = new File(coreLangDir, fileName)
-            def modFile = new File(modLangDir, fileName)
-            def merged = [:]
-            if (coreFile.exists()) {
-                merged.putAll(new JsonSlurper().parse(coreFile) as Map)
-            }
-            if (modFile.exists()) {
-                merged.putAll(new JsonSlurper().parse(modFile) as Map)
-            }
-            new File(outDir, fileName).text = JsonOutput.prettyPrint(JsonOutput.toJson(merged))
-        }
-    }
-}
-
 tasks.named('jar', Jar).configure {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     dependsOn(
             coreProject.tasks.named('classes'),
             coreProject.tasks.named('generateModMetadata'),
-            modProject.tasks.named('classes'),
-            tasks.named('mergeLangResources')
+            modProject.tasks.named('classes')
     )
-    from(modProject.sourceSets.main.output) {
-        exclude 'assets/timestopreborn/lang/**'
-    }
+    from(modProject.sourceSets.main.output)
     from(coreProject.sourceSets.main.output) {
-        exclude 'assets/timestopreborn/lang/**'
         exclude 'assets/timestopreborn/sounds.json'
     }
-    from(layout.buildDirectory.dir('generated/mergedResources'))
 }
 
 tasks.withType(JavaCompile).configureEach {

@@ -1,4 +1,8 @@
 {
+  "itemGroup.timestopreborn": "时停：重生",
+  "item.timestopreborn.time_clock": "时间怀表",
+  "item.timestopreborn.knife": "飞刀",
+  "message.timestopreborn.void_craft.time_clock": "你向虚空献出了世界的战利品，也因此理解了时间的真谛",
   "timestopreborn.configuration.title": "时停：重生 配置",
   "timestopreborn.configuration.section.timestopreborn.client.toml": "客户端",
   "timestopreborn.configuration.section.timestopreborn.client.toml.title": "客户端",

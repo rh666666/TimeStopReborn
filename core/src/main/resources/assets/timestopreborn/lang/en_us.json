@@ -1,4 +1,8 @@
 {
+  "itemGroup.timestopreborn": "Time Stop: Reborn",
+  "item.timestopreborn.time_clock": "Time Clock",
+  "item.timestopreborn.knife": "Knife",
+  "message.timestopreborn.void_craft.time_clock": "You offered the spoils of the world to the void, and thus grasped the truth of time",
   "timestopreborn.configuration.title": "Time Stop: Reborn Configuration",
   "timestopreborn.configuration.section.timestopreborn.client.toml": "Client",
   "timestopreborn.configuration.section.timestopreborn.client.toml.title": "Client",
