@@ -10,10 +10,41 @@ java {
     toolchain.languageVersion = JavaLanguageVersion.of(21)
 }
 
+var metadataReplaceProperties = [
+        minecraft_version      : rootProject.minecraft_version,
+        minecraft_version_range: rootProject.minecraft_version_range,
+        neo_version            : rootProject.neo_version,
+        neo_version_range      : rootProject.neo_version_range,
+        loader_version_range   : rootProject.loader_version_range,
+        mod_id                 : rootProject.mod_id,
+        mod_name               : rootProject.mod_name,
+        mod_license            : rootProject.mod_license,
+        mod_version            : rootProject.mod_version,
+]
+
+/**
+ * 完整模组 metadata：声明 core 与 mod 两套 mixin。
+ * 输出至 mod 资源目录，供根项目 dev / jar 合并时优先于 core。
+ */
+var generateFullModMetadata = tasks.register('generateFullModMetadata', ProcessResources) {
+    inputs.properties metadataReplaceProperties
+    expand metadataReplaceProperties
+    from('src/main/templates') {
+        include 'META-INF/neoforge.mods.full.toml'
+        rename 'neoforge.mods.full.toml', 'neoforge.mods.toml'
+    }
+    into layout.buildDirectory.dir('generated/modMetadata')
+}
+
 sourceSets.main.resources {
+    srcDir layout.buildDirectory.dir('generated/modMetadata')
     srcDir('src/generated/resources')
     exclude('**/*.bbmodel')
     exclude('src/generated/**/.cache')
+}
+
+tasks.named('processResources').configure {
+    dependsOn generateFullModMetadata
 }
 
 neoForge {
@@ -24,6 +55,8 @@ neoForge {
         minecraftVersion = rootProject.parchment_minecraft_version
     }
 }
+
+neoForge.ideSyncTask generateFullModMetadata
 
 dependencies {
     implementation project(':core')

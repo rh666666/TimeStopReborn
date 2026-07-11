@@ -31,6 +31,9 @@ neoForge {
     }
 }
 
+/**
+ * API 发布用 metadata：仅声明 core mixin，不含 mod 层配置。
+ */
 var generateModMetadata = tasks.register('generateModMetadata', ProcessResources) {
     var replaceProperties = [
             minecraft_version      : rootProject.minecraft_version,
@@ -45,11 +48,34 @@ var generateModMetadata = tasks.register('generateModMetadata', ProcessResources
     ]
     inputs.properties replaceProperties
     expand replaceProperties
-    from 'src/main/templates'
+    from('src/main/templates') {
+        include 'META-INF/neoforge.mods.toml'
+    }
     into layout.buildDirectory.dir('generated/sources/modMetadata')
 }
 
-sourceSets.main.resources.srcDir generateModMetadata
+// 作为根项目子模块时 metadata 仅打入 core jar，不进入 dev classpath，避免覆盖 mod 的完整 mods.toml。
+if (findProject(':mod') == null) {
+    sourceSets.main.resources.srcDir generateModMetadata
+}
+
+// 根项目含 mod 子模块时，lang 由 mod 全量提供，避免 dev  classpath 中 core 覆盖 mod。
+if (findProject(':mod') != null) {
+    sourceSets.main.resources {
+        exclude 'assets/timestopreborn/lang/**'
+    }
+}
+
+tasks.named('jar', Jar).configure {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from generateModMetadata
+    if (findProject(':mod') != null) {
+        from('src/main/resources') {
+            include 'assets/timestopreborn/lang/**'
+        }
+    }
+}
+
 neoForge.ideSyncTask generateModMetadata
 
 publishing {

@@ -91,6 +91,7 @@ neoForge {
         }
     }
 
+    // 同路径资源以后添加的 sourceSet 为准；mod 置于 core 之后，保证 lang 等 mod 层内容优先。
     mods {
         "${mod_id}" {
             sourceSet coreProject.sourceSets.main
@@ -99,16 +100,29 @@ neoForge {
     }
 }
 
+neoForge.ideSyncTask modProject.tasks.named('generateFullModMetadata')
+neoForge.ideSyncTask tasks.named('prepareClientRun')
+
+tasks.matching { it.name.endsWith('Main.main()') }.configureEach {
+    dependsOn tasks.named('prepareClientRun')
+}
+
+/**
+ * 完整模组 jar：先合并 mod 输出，再合并 core；DuplicatesStrategy.EXCLUDE 保证 mod 同路径资源优先。
+ * core 侧排除 mods.toml、sounds.json 与 lang，完整翻译由 mod 提供。
+ */
 tasks.named('jar', Jar).configure {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     dependsOn(
-            coreProject.tasks.named('classes'),
-            coreProject.tasks.named('generateModMetadata'),
-            modProject.tasks.named('classes')
+            modProject.tasks.named('generateFullModMetadata'),
+            modProject.tasks.named('classes'),
+            coreProject.tasks.named('classes')
     )
     from(modProject.sourceSets.main.output)
     from(coreProject.sourceSets.main.output) {
+        exclude 'META-INF/neoforge.mods.toml'
         exclude 'assets/timestopreborn/sounds.json'
+        exclude 'assets/timestopreborn/lang/**'
     }
 }
 
