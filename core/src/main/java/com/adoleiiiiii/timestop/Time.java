@@ -4,7 +4,6 @@ import com.adoleiiiiii.timestop.common.AreaParticle;
 import com.adoleiiiiii.timestop.common.ModifyShader;
 import com.adoleiiiiii.timestop.common.SoundsRegister;
 import com.adoleiiiiii.timestop.config.TimeStopClientConfig;
-import com.adoleiiiiii.timestop.config.TimeStopCommonConfig;
 import com.adoleiiiiii.timestop.mixin.accessor.LivingEntityAccessor;
 import com.adoleiiiiii.timestop.mixin.accessor.MinecraftAccessor;
 import com.adoleiiiiii.timestop.mixin.accessor.WalkAnimationStateAccessor;
@@ -33,6 +32,7 @@ public final class Time {
     private static volatile boolean clientActive = false;
     @Nullable
     private static volatile UUID clientOwnerUuid = null;
+    private static volatile boolean clientOnlyOwnerCanMove = false;
     @Nullable
     private static volatile ResourceLocation activePostEffect = null;
     private static volatile boolean animationOnlyPostEffect = false;
@@ -49,12 +49,19 @@ public final class Time {
      * 由 S2C 包驱动，应用时停视觉与插值冻结。
      *
      * @param ownerEntityId 触发者实体 id；-1 表示未知
-     * @param ownerUuid     触发者 UUID；未激活时为 null
+     * @param ownerUuid          触发者 UUID；未激活时为 null
+     * @param onlyOwnerCanMove   服务端是否启用仅触发者可行动
      */
-    public static void applyClientVisuals(boolean active, int ownerEntityId, @Nullable UUID ownerUuid) {
+    public static void applyClientVisuals(
+            boolean active,
+            int ownerEntityId,
+            @Nullable UUID ownerUuid,
+            boolean onlyOwnerCanMove
+    ) {
         boolean wasActive = clientActive;
         clientActive = active;
         clientOwnerUuid = active ? ownerUuid : null;
+        clientOnlyOwnerCanMove = active && onlyOwnerCanMove;
 
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) {
@@ -297,6 +304,7 @@ public final class Time {
         boolean wasActive = clientActive;
         clientActive = false;
         clientOwnerUuid = null;
+        clientOnlyOwnerCanMove = false;
         pendingVisualApply = false;
         pendingActive = false;
         pendingWasActive = false;
@@ -310,13 +318,13 @@ public final class Time {
 
     /**
      * 时停期间本地玩家是否允许行动（移动、输入、独立计时器）。
-     * 未开启 onlyOwnerCanMove 时，时停中所有客户端玩家均可行动。
+     * 规则来自服务端 S2C 同步的 {@link #clientOnlyOwnerCanMove}。
      */
     public static boolean canLocalPlayerAct() {
         if (!clientActive) {
             return true;
         }
-        if (!TimeStopCommonConfig.isOnlyOwnerCanMove()) {
+        if (!clientOnlyOwnerCanMove) {
             return true;
         }
         Minecraft mc = Minecraft.getInstance();

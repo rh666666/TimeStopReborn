@@ -5,7 +5,8 @@
   "mixins": [
     "ServerMixin",
     "LivingEntityMixin",
-    "ServerPlayerMixin"
+    "ServerPlayerMixin",
+    "ServerGamePacketListenerMixin"
   ],
   "client": [
     "MinecraftMixin",
@@ -16,6 +17,7 @@
     "CameraMixin",
     "EntityMixin",
     "LivingEntityClientMixin",
+    "LocalPlayerMixin",
     "TickRateManagerMixin",
     "accessor.WalkAnimationStateAccessor",
     "accessor.LivingEntityAccessor",

@@ -15,13 +15,19 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * S2C：同步时停视觉状态（shader、音效、粒子）至所有客户端。
+ * S2C：同步时停视觉状态与玩法规则至所有客户端。
  *
- * @param active        是否进入时停
- * @param ownerEntityId 触发者在服务端上的实体 id；-1 表示未知
- * @param ownerUuid     触发者 UUID；未激活时为 null
+ * @param active            是否进入时停
+ * @param ownerEntityId     触发者在服务端上的实体 id；-1 表示未知
+ * @param ownerUuid         触发者 UUID；未激活时为 null
+ * @param onlyOwnerCanMove  时停期间是否仅触发者可行动（服务端权威）
  */
-public record TimeStopVisualPayload(boolean active, int ownerEntityId, @Nullable UUID ownerUuid) implements CustomPacketPayload {
+public record TimeStopVisualPayload(
+        boolean active,
+        int ownerEntityId,
+        @Nullable UUID ownerUuid,
+        boolean onlyOwnerCanMove
+) implements CustomPacketPayload {
     public static final CustomPacketPayload.Type<TimeStopVisualPayload> TYPE =
             new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(TimeStopReborn.MODID, "time_stop_visual"));
 
@@ -31,8 +37,9 @@ public record TimeStopVisualPayload(boolean active, int ownerEntityId, @Nullable
                     ByteBufCodecs.VAR_INT, TimeStopVisualPayload::ownerEntityId,
                     UUIDUtil.STREAM_CODEC.apply(ByteBufCodecs::optional),
                     TimeStopVisualPayload::ownerUuidOptional,
-                    (active, ownerEntityId, ownerUuid) -> new TimeStopVisualPayload(
-                            active, ownerEntityId, ownerUuid.orElse(null))
+                    ByteBufCodecs.BOOL, TimeStopVisualPayload::onlyOwnerCanMove,
+                    (active, ownerEntityId, ownerUuid, onlyOwnerCanMove) -> new TimeStopVisualPayload(
+                            active, ownerEntityId, ownerUuid.orElse(null), onlyOwnerCanMove)
             );
 
     private static Optional<UUID> ownerUuidOptional(TimeStopVisualPayload payload) {
@@ -40,7 +47,11 @@ public record TimeStopVisualPayload(boolean active, int ownerEntityId, @Nullable
     }
 
     public static void handle(TimeStopVisualPayload payload, IPayloadContext context) {
-        context.enqueueWork(() -> Time.applyClientVisuals(payload.active(), payload.ownerEntityId(), payload.ownerUuid()));
+        context.enqueueWork(() -> Time.applyClientVisuals(
+                payload.active(),
+                payload.ownerEntityId(),
+                payload.ownerUuid(),
+                payload.onlyOwnerCanMove()));
     }
 
     @Override

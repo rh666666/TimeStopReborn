@@ -1,6 +1,7 @@
 package com.adoleiiiiii.timestop.common;
 
 import com.adoleiiiiii.timestop.TimeStopReborn;
+import com.adoleiiiiii.timestop.config.TimeStopCommonConfig;
 import com.adoleiiiiii.timestop.network.TimeStopVisualPayload;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -26,6 +27,10 @@ public final class TimeStopPlayerSync {
         }
         ServerPlayer owner = TimeStopManager.getOwner(player.getServer());
         int ownerId = owner != null ? owner.getId() : TimeStopManager.getOwnerEntityId();
-        PacketDistributor.sendToPlayer(player, new TimeStopVisualPayload(true, ownerId, TimeStopManager.getOwnerUuid()));
+        PacketDistributor.sendToPlayer(player, new TimeStopVisualPayload(
+                true,
+                ownerId,
+                TimeStopManager.getOwnerUuid(),
+                TimeStopCommonConfig.isOnlyOwnerCanMove()));
     }
 }

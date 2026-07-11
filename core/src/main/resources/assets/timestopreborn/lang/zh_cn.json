@@ -23,5 +23,5 @@
   "timestopreborn.configuration.gameplay.button": "打开",
   "timestopreborn.configuration.gameplay.tooltip": "时停玩法规则。",
   "timestopreborn.configuration.gameplay.onlyOwnerCanMove": "时停期间仅触发者可移动",
-  "timestopreborn.configuration.gameplay.onlyOwnerCanMove.tooltip": "开启后，时停期间只有触发时停的玩家可以移动。（似乎无效）"
+  "timestopreborn.configuration.gameplay.onlyOwnerCanMove.tooltip": "开启后，时停期间只有触发时停的玩家可以移动。"
 }

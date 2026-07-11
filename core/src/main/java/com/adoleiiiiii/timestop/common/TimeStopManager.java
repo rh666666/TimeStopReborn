@@ -2,6 +2,7 @@ package com.adoleiiiiii.timestop.common;
 
 import com.adoleiiiiii.timestop.Time;
 import com.adoleiiiiii.timestop.api.TimeStopStateChangeEvent;
+import com.adoleiiiiii.timestop.config.TimeStopCommonConfig;
 import com.adoleiiiiii.timestop.network.TimeStopVisualPayload;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -47,9 +48,30 @@ public final class TimeStopManager {
         ownerUuid = targetActive ? player.getUUID() : null;
         ownerEntityId = targetActive ? player.getId() : -1;
         server.tickRateManager().setFrozen(active);
-        PacketDistributor.sendToAllPlayers(new TimeStopVisualPayload(active, ownerEntityId, ownerUuid));
+        PacketDistributor.sendToAllPlayers(createVisualPayload(active, ownerEntityId, ownerUuid));
         NeoForge.EVENT_BUS.post(new TimeStopStateChangeEvent(server, player, active, previousActive));
         return active;
+    }
+
+    /**
+     * 时停期间该玩家是否允许移动与输入；服务端权威判定。
+     *
+     * @param player 待判定玩家
+     * @return 未时停、未限制或玩家为触发者时为 true
+     */
+    public static boolean canPlayerAct(ServerPlayer player) {
+        if (!active) {
+            return true;
+        }
+        if (!TimeStopCommonConfig.isOnlyOwnerCanMove()) {
+            return true;
+        }
+        return ownerUuid != null && ownerUuid.equals(player.getUUID());
+    }
+
+    private static TimeStopVisualPayload createVisualPayload(boolean active, int ownerEntityId, @Nullable UUID ownerUuid) {
+        boolean onlyOwnerCanMove = active && TimeStopCommonConfig.isOnlyOwnerCanMove();
+        return new TimeStopVisualPayload(active, ownerEntityId, ownerUuid, onlyOwnerCanMove);
     }
 
     /** @return 服务端是否处于时停 */
@@ -111,7 +133,7 @@ public final class TimeStopManager {
             server.tickRateManager().setFrozen(false);
         }
         if (wasActive) {
-            PacketDistributor.sendToAllPlayers(new TimeStopVisualPayload(false, -1, null));
+            PacketDistributor.sendToAllPlayers(createVisualPayload(false, -1, null));
         }
     }
 }

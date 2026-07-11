@@ -22,6 +22,6 @@
   "timestopreborn.configuration.gameplay": "Gameplay",
   "timestopreborn.configuration.gameplay.button": "Open",
   "timestopreborn.configuration.gameplay.tooltip": "Time stop gameplay rules.",
-  "timestopreborn.configuration.gameplay.onlyOwnerCanMove": "Only Triggerer Can Move During Time Stop (This config may not work)",
+  "timestopreborn.configuration.gameplay.onlyOwnerCanMove": "Only Triggerer Can Move During Time Stop",
   "timestopreborn.configuration.gameplay.onlyOwnerCanMove.tooltip": "When enabled, only the player who triggered time stop can move during time stop."
 }
