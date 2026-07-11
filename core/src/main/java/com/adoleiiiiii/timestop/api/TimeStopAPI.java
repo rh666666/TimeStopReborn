@@ -9,19 +9,10 @@ import org.jetbrains.annotations.Nullable;
 import java.util.UUID;
 
 /**
- * 时停模组对外 API：查询、切换状态与功能门控。
+ * 时停模组对外 API：查询与切换时停状态。
  */
 public final class TimeStopAPI {
     private TimeStopAPI() {
-    }
-
-    /**
-     * 返回功能门控，用于关闭默认内容注册。
-     *
-     * @return 功能门控实例
-     */
-    public static TimeStopFeatureGate features() {
-        return TimeStopFeatureGate.INSTANCE;
     }
 
     /**

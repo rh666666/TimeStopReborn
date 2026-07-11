@@ -19,10 +19,5 @@
   "timestopreborn.configuration.gameplay.button": "打开",
   "timestopreborn.configuration.gameplay.tooltip": "时停玩法规则。",
   "timestopreborn.configuration.gameplay.onlyOwnerCanMove": "时停期间仅触发者可移动",
-  "timestopreborn.configuration.gameplay.onlyOwnerCanMove.tooltip": "开启后，时停期间只有触发时停的玩家可以移动。（似乎无效）",
-  "timestopreborn.configuration.features": "功能",
-  "timestopreborn.configuration.features.button": "打开",
-  "timestopreborn.configuration.features.tooltip": "默认模组内容与虚空转化开关。",
-  "timestopreborn.configuration.features.registerDefaultContent": "注册默认物品、实体与虚空转化",
-  "timestopreborn.configuration.features.registerDefaultContent.tooltip": "关闭后不注册怀表、飞刀、创造页、实体、音效与下界之星虚空转化。"
+  "timestopreborn.configuration.gameplay.onlyOwnerCanMove.tooltip": "开启后，时停期间只有触发时停的玩家可以移动。（似乎无效）"
 }

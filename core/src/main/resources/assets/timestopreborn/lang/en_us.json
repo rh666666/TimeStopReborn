@@ -19,10 +19,5 @@
   "timestopreborn.configuration.gameplay.button": "Open",
   "timestopreborn.configuration.gameplay.tooltip": "Time stop gameplay rules.",
   "timestopreborn.configuration.gameplay.onlyOwnerCanMove": "Only Triggerer Can Move During Time Stop (This config may not work)",
-  "timestopreborn.configuration.gameplay.onlyOwnerCanMove.tooltip": "When enabled, only the player who triggered time stop can move during time stop.",
-  "timestopreborn.configuration.features": "Features",
-  "timestopreborn.configuration.features.button": "Open",
-  "timestopreborn.configuration.features.tooltip": "Default mod content and void craft toggles.",
-  "timestopreborn.configuration.features.registerDefaultContent": "Register Default Items, Entities and Void Craft",
-  "timestopreborn.configuration.features.registerDefaultContent.tooltip": "When disabled, time clock, knife, creative tab, entities, sounds and nether star void craft are not registered."
+  "timestopreborn.configuration.gameplay.onlyOwnerCanMove.tooltip": "When enabled, only the player who triggered time stop can move during time stop."
 }

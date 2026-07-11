@@ -1,6 +1,5 @@
 package com.adoleiiiiii.timestop;
 
-import com.adoleiiiiii.timestop.api.TimeStopFeatureGate;
 import com.adoleiiiiii.timestop.common.EntityRegister;
 import com.adoleiiiiii.timestop.render.entity.KnifeRenderer;
 import net.neoforged.api.distmarker.Dist;
@@ -18,7 +17,7 @@ public final class TimeStopModClient {
 
     @SubscribeEvent
     static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
-        if (!TimeStopFeatureGate.registerDefaultContent() || !EntityRegister.FLYING_SWORD.isBound()) {
+        if (!EntityRegister.FLYING_SWORD.isBound()) {
             return;
         }
         event.registerEntityRenderer(EntityRegister.FLYING_SWORD.get(), KnifeRenderer::new);

@@ -3,7 +3,6 @@ package com.adoleiiiiii.timestop.content;
 import com.adoleiiiiii.timestop.ClockItem;
 import com.adoleiiiiii.timestop.KnifeItem;
 import com.adoleiiiiii.timestop.TimeStopReborn;
-import com.adoleiiiiii.timestop.api.TimeStopFeatureGate;
 import com.adoleiiiiii.timestop.common.EntityRegister;
 import com.adoleiiiiii.timestop.common.ModSoundsRegister;
 import net.minecraft.ChatFormatting;
@@ -47,14 +46,11 @@ public final class TimeStopDefaultContent {
     }
 
     /**
-     * 注册默认内容；受 {@link TimeStopFeatureGate} 与 common 配置控制。
+     * 向模组事件总线注册默认物品、实体与相关音效。
      *
      * @param modEventBus 模组事件总线
      */
     public static void register(IEventBus modEventBus) {
-        if (!TimeStopFeatureGate.registerDefaultContent()) {
-            return;
-        }
         ITEMS.register(modEventBus);
         CREATIVE_MODE_TABS.register(modEventBus);
         ModSoundsRegister.SOUNDS.register(modEventBus);
