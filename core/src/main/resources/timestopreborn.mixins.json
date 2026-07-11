@@ -1,0 +1,27 @@
+{
+  "required": true,
+  "package": "com.adoleiiiiii.timestop.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "ServerMixin",
+    "LivingEntityMixin",
+    "ServerPlayerMixin"
+  ],
+  "client": [
+    "MinecraftMixin",
+    "GameRendererMixin",
+    "RenderStateShardMixin",
+    "Serverpause",
+    "IntegratedServerMixin",
+    "CameraMixin",
+    "EntityMixin",
+    "LivingEntityClientMixin",
+    "TickRateManagerMixin",
+    "accessor.WalkAnimationStateAccessor",
+    "accessor.LivingEntityAccessor",
+    "accessor.MinecraftAccessor"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

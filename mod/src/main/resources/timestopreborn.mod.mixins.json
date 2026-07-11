@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "package": "com.adoleiiiiii.timestop.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "EntityVoidCraftMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

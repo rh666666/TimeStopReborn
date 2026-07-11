@@ -1,6 +1,8 @@
 # 时停：重生
 
-超绝时停模组 [MegaTimeStop](https://github.com/Mega32K/MegaTimeStop) 的非官方延续版，基于 Minecraft 1.21.1 与 NeoForge 移植。
+[MegaTimeStop](https://github.com/Mega32K/MegaTimeStop) 的非官方延续版，基于 Minecraft 1.21.1 与 NeoForge 移植。
+
+项目分为 `core/`（时停核心与 API）与 `mod/`（怀表、飞刀等默认内容），运行时合并为单个模组 JAR。
 
 [English README](README.md)
 
@@ -12,7 +14,22 @@
 .\gradlew build
 ```
 
-构建产物位于 `build/libs/` 目录。
+产物位于 `build/libs/`（完整模组 JAR）；Lib 精简版位于 `core/build/libs/timestop-core-<version>.jar`。
+
+## Lib 依赖
+
+Maven 坐标：`com.adoleiiiiii.timestop:timestop-core:<version>`
+
+```powershell
+.\gradlew :core:publishToMavenLocal
+```
+
+```gradle
+dependencies {
+    compileOnly "com.adoleiiiiii.timestop:timestop-core:1.0.0"
+    localRuntime "com.adoleiiiiii.timestop:timestop-core:1.0.0"
+}
+```
 
 ## 致谢
 
@@ -20,6 +37,4 @@
 
 ## 许可证
 
-本项目采用 [GNU General Public License v3.0](LICENSE)（GPL-3.0-only）授权。
-
-你可以在 GPL v3 条款下复制、修改与再分发本软件。完整许可文本见 [LICENSE](LICENSE) 文件。
+[GPL-3.0-only](LICENSE)
